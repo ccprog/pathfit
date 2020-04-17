@@ -15,16 +15,12 @@ export default class Pathfit {
         this.formatter = new Formatter(Object.assign({ precision: 6 }, opt));
     }
 
-    set_fit (preserveAspectRatio) {
+    set_fit(preserveAspectRatio) {
         this.scale.set_preserveAspectRatio(preserveAspectRatio);
     }
 
-    set path(path) {
+    set_path(path) {
         this._ast = new Parser().parse(path);
-    }
-
-    get path() {
-        return this.formatter(this._ast);
     }
 
     scale_to(width, height) {
