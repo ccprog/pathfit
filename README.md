@@ -1,6 +1,6 @@
 The CSS `path()` function does not accept units in its path string, because it is following
 the SVG path syntax. This makes it impossible to make it responsive with CSS alone. This
-scipt module helps by providing on-the-fly capabilities to re-compute the path data applying
+script module helps by providing on-the-fly capabilities to re-compute the path data applying
 arbitrary SVG transformations.
 
 As an additional mechanism, the path data can be defined in relation to a view box. If a
@@ -47,7 +47,7 @@ for (let key of ['width', 'height', 'viewBox', 'preserveAspectRatio']) {
 Require the module.
 
 ```js
-const Pathfit = require('pathfit);
+const Pathfit = require('pathfit');
 ```
 
 You have to provide path and size information directly
@@ -124,7 +124,7 @@ if `attr` was not previously set (although `attr.preserveAspectRatio` could have
   is supported. **CSS syntax (i. e. with units and relying on a `transform-origin`) will fail.**
 
 Sets the path for later use with `.scale_to()` or `.transform()`. An optional pretransformation
-can be applied to the path data. This might be espescially useful if the path data were provided
+can be applied to the path data. This might be especially useful if the path data were provided
 from a SVG where the path userspace coordinates were not identical to the root viewBox viewport.
 
 Collect all `transform` attributes in descending tree order down to and including the
