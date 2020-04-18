@@ -846,6 +846,10 @@ class Pathfit {
     }
 
     _transform_ast(trans) {
+        if (!this._ast) {
+            throw new Error('no path is set');
+        }
+
         const transformer = new Transformer(trans);
 
         return transformer.transform(this._ast);
