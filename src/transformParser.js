@@ -83,4 +83,12 @@ export default class TransformParser extends Parser {
 
         return this.current;
     }
+
+    parse(str) {
+        if (Array.isArray(str)) {
+            str = str.join(' ');
+        }
+
+        super.parse(str);
+    }
 }

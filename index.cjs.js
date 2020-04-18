@@ -355,6 +355,14 @@ class TransformParser extends Parser {
 
         return this.current;
     }
+
+    parse(str) {
+        if (Array.isArray(str)) {
+            str = str.join(' ');
+        }
+
+        super.parse(str);
+    }
 }
 
 class Transformer {
@@ -804,43 +812,63 @@ Formatter.pair_wsp = ' ';
 Formatter.arg_wsp = ' ';
 
 class Pathfit {
-    constructor(attr, path, opt) {
-        const {width, height, viewBox, preserveAspectRatio} = attr;
-        this.scale = new Scale(width, height, viewBox, preserveAspectRatio);
+    constructor(attr, path, pretransform, opt) {
+        if (attr) this.set_viewbox(attr);
 
-        if (path) {
-            this.path = path;
-        }
+        if (path) this.set_path(path, pretransform);
 
         this.formatter = new Formatter(Object.assign({ precision: 6 }, opt));
     }
 
+    set_viewbox(attr) {
+        const {width, height, viewBox, preserveAspectRatio} = attr;
+        this.scale = new Scale(width, height, viewBox, preserveAspectRatio);
+    }
+
     set_fit(preserveAspectRatio) {
+        if (!this.scale) {
+            throw new Error('no reference viewBox is set');
+        }
+
         this.scale.set_preserveAspectRatio(preserveAspectRatio);
     }
 
-    set_path(path) {
+    set_path(path, pretransform) {
         this._ast = new PathParser().parse(path);
+
+        if (pretransform) {
+            const trans = new TransformParser().parse(pretransform);
+
+            this._ast = this._transform_ast(trans);
+        }
+
+        return this.formatter.format(this._ast);
     }
 
-    _transform(trans) {
+    _transform_ast(trans) {
         const transformer = new Transformer(trans);
 
-        const new_ast = transformer.transform(this._ast);
-
-        return this.formatter.format(new_ast);
+        return transformer.transform(this._ast);
     }
 
     transform(str) {
         const trans = new TransformParser().parse(str);
 
-        return this._transform(trans);
+        const ast = this._transform_ast(trans);
+
+        return this.formatter.format(ast);
     }
 
     scale_to(width, height) {
+        if (!this.scale) {
+            throw new Error('no reference viewBox is set');
+        }
+
         const trans = this.scale.transform(width, height);
 
-        return this._transform(trans);
+        const ast = this._transform_ast(trans);
+
+        return this.formatter.format(ast);
     }
 }
 
