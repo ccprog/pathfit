@@ -63,7 +63,7 @@ var Pathfit = (function () {
         }
 
         commands(str) {
-            const splited = str.split(Parser.command_names);
+            const splited = str.split(this.command_names);
             const start = splited.shift();
 
             if (/[^\x09\x20\x0D\x0A]+/.test(start)) {
@@ -177,6 +177,22 @@ var Pathfit = (function () {
             }
         }
 
+        parse(str) {
+            this.current = [];
+            this.source = str;
+
+            return this.group(str);
+        }
+    }
+
+    const path_commands = /([mzlhvcsqta])/i;
+    const movoto_command = /m/i;
+
+    class PathParser extends Parser {
+        get command_names() {
+            return path_commands;
+        }
+
         collect_arguments(get, raw, len) {
             const array = [];
             let must_follow = true;
@@ -197,7 +213,7 @@ var Pathfit = (function () {
         group (str) {
             const splited = this.commands(str);
 
-            if (splited.length && !splited[0].match(Parser.movoto_command)) {
+            if (splited.length && !splited[0].match(movoto_command)) {
                 this.throw_parse_error('expected moveto at start', splited.slice(0, 2).join(''), 0);
             }
 
@@ -256,8 +272,91 @@ var Pathfit = (function () {
             return this.group(str);
         }
     }
-    Parser.command_names = /([mzlhvcsqta])/i;
-    Parser.movoto_command = /m/i;
+
+    const transform_commands = /(matrix|translate|scale|rotate|skewX|skewY)/i;
+
+    const group_structure = {
+        "matrix":{
+            args: ["a", "b", "c", "d", "e", "f"],
+            required: 6
+        },
+        "translate": {
+            args: ["tx", "ty"],
+            required: 1
+        },
+        "scale": {
+            args: ["sx", "sy"],
+            required: 1
+        },
+        "rotate": {
+            args: ["angle", "cx", "cy"],
+            required: 1
+        },
+        "skewX": {
+            args: ["angle"],
+            required: 1
+        },
+        "skewY": {
+            args: ["angle"],
+            required: 1
+        }
+    };
+
+    class TransformParser extends Parser {
+        get command_names() {
+            return transform_commands;
+        }
+
+        collect_arguments(raw, args, required) {
+            raw.get_token("wsp");
+
+            if (!raw.get_token("brace_open", true)) {
+                this.throw_parse_error("expected opening brace", raw);
+            }
+
+            raw.get_token("wsp");
+
+            const numbers = {};
+
+            const test = args.some(id => {
+                numbers[id] = this.number(raw);
+
+                const must_follow = this.comma_wsp(raw);
+                return raw.get_token("brace_close", true) && !must_follow;
+            });
+
+            if (!test) {
+                this.throw_parse_error("expected closing brace", raw);
+            }
+
+            const len = Object.keys(numbers).length;
+            if (len !== required && len !== args.length) {
+                this.throw_parse_error("wrong number of arguments", raw);
+            }
+
+            this.test_end(raw);
+
+            return numbers;
+        }
+
+        group(str) {
+            const splited = this.commands(str, transform_commands);
+
+            while (splited.length > 1) {
+                const transform = splited.shift();
+                const raw = this.get_raw(transform, splited.shift());
+
+                const {args, required} = group_structure[transform];
+
+                const command = this.collect_arguments(raw, args, required);
+
+                command.command = transform;
+                this.current.push(command);
+            }
+
+            return this.current;
+        }
+    }
 
     class Transformer {
         constructor(trans) {
@@ -722,17 +821,27 @@ var Pathfit = (function () {
         }
 
         set_path(path) {
-            this._ast = new Parser().parse(path);
+            this._ast = new PathParser().parse(path);
         }
 
-        scale_to(width, height) {
-            const trans = this.scale.transform(width, height);
-
+        _transform(trans) {
             const transformer = new Transformer(trans);
 
             const new_ast = transformer.transform(this._ast);
 
             return this.formatter.format(new_ast);
+        }
+
+        transform(str) {
+            const trans = new TransformParser().parse(str);
+
+            return this._transform(trans);
+        }
+
+        scale_to(width, height) {
+            const trans = this.scale.transform(width, height);
+
+            return this._transform(trans);
         }
     }
 
