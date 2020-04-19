@@ -649,7 +649,7 @@ var Pathfit = (function () {
             const unit = typeof len === 'number' ? null : len.match(Scale.regex)[1];
 
             const value = parseFloat(len);
-            if (value === 0 || (unit && unit !== 'px')) throw Scale.error;
+            if (value <= 0 || (unit && unit !== 'px')) throw Scale.error;
 
             return value;
         }
@@ -663,7 +663,7 @@ var Pathfit = (function () {
                     this.height
                 ] = viewBox.split(/[,\s]+/).map(str => parseFloat(str));
 
-                if (this.width === 0 || this.height === 0) throw Scale.error;
+                if (this.width <= 0 || this.height <= 0) throw Scale.error;
             } else if (width && height) {
                 this.x = 0;
                 this.y = 0;
@@ -674,11 +674,8 @@ var Pathfit = (function () {
             }
         }
 
-        set_preserveAspectRatio(preserveAspectRatio = '') {
-            [
-                this.align = 'xMidYMid',
-                this.meetOrSlice = 'meet'
-            ] = preserveAspectRatio.split(/\s/);
+        set_preserveAspectRatio(preserveAspectRatio = 'xMidYMid meet') {
+            [ this.align, this.meetOrSlice ] = preserveAspectRatio.split(/\s/);
         }
 
         transform (w, h) {
@@ -696,9 +693,9 @@ var Pathfit = (function () {
                 }
             }
 
-            let tx = -this.x * sx,
-                ty = -this.y * sy;
-        
+            let tx = -this.x * sx + 0,
+                ty = -this.y * sy + 0;
+
             if (this.align.includes('xMid')) {
                 tx += (width - this.width * sx) / 2;
             }
