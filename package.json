@@ -8,13 +8,15 @@
     "responsive",
     "CSS"
   ],
-  "author": "Claus Colloseus <ccprg@gmx.de>",
+  "author": "Claus Colloseus <ccprog@gmx.de>",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "test": "npx jasmine"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.1.0",
-    "rollup-plugin-terser": "^5.3.0"
+    "rollup-plugin-terser": "^5.3.0",
+    "jasmine": "^3.5.0"
   }
 }
