@@ -1,4 +1,4 @@
-import RawCommand from './rawCommand.js';
+const RawCommand = require('./rawCommand.js');
 
 class ParseError extends Error {
     constructor(desc, string, position) {
@@ -11,7 +11,7 @@ class ParseError extends Error {
     }
 }
 
-export default class Parser {
+class Parser {
     constructor() {
         this.current = [];
         this.source = '';
@@ -147,3 +147,5 @@ export default class Parser {
         return this.group(str);
     }
 }
+
+module.exports = Parser;

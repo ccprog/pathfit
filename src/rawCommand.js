@@ -1,4 +1,4 @@
-export default class RawCommand {
+class RawCommand {
     constructor(command, str) {
         this._str = str;
         this._pos = 0;
@@ -33,3 +33,5 @@ RawCommand.regex = {
     number: /^[\+\-]?(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/,
     nonnegative: /^(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/
 };
+
+module.exports = RawCommand;

@@ -1,4 +1,4 @@
-import Parser from './parser.js';
+const Parser = require('./parser.js');
 
 const transform_commands = /(matrix|translate|scale|rotate|skewX|skewY)/i;
 
@@ -29,7 +29,7 @@ const group_structure = {
     }
 };
 
-export default class TransformParser extends Parser {
+class TransformParser extends Parser {
     get command_names() {
         return transform_commands;
     }
@@ -92,3 +92,5 @@ export default class TransformParser extends Parser {
         super.parse(str);
     }
 }
+
+module.exports = TransformParser;

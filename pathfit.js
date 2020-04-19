@@ -37,6 +37,8 @@ var Pathfit = (function () {
         nonnegative: /^(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/
     };
 
+    var rawCommand = RawCommand;
+
     class ParseError extends Error {
         constructor(desc, string, position) {
             super();
@@ -55,7 +57,7 @@ var Pathfit = (function () {
         }
 
         get_raw(command, str) {
-            return new RawCommand(command, str);
+            return new rawCommand(command, str);
         }
 
         throw_parse_error(desc, string, position) {
@@ -185,10 +187,12 @@ var Pathfit = (function () {
         }
     }
 
+    var parser = Parser;
+
     const path_commands = /([mzlhvcsqta])/i;
     const movoto_command = /m/i;
 
-    class PathParser extends Parser {
+    class PathParser extends parser {
         get command_names() {
             return path_commands;
         }
@@ -273,6 +277,8 @@ var Pathfit = (function () {
         }
     }
 
+    var pathParser = PathParser;
+
     const transform_commands = /(matrix|translate|scale|rotate|skewX|skewY)/i;
 
     const group_structure = {
@@ -302,7 +308,7 @@ var Pathfit = (function () {
         }
     };
 
-    class TransformParser extends Parser {
+    class TransformParser extends parser {
         get command_names() {
             return transform_commands;
         }
@@ -365,6 +371,8 @@ var Pathfit = (function () {
             super.parse(str);
         }
     }
+
+    var transformParser = TransformParser;
 
     class Transformer {
         constructor(trans) {
@@ -635,6 +643,8 @@ var Pathfit = (function () {
         }
     }
 
+    var transformer = Transformer;
+
     class Scale {
         constructor(width, height, viewBox, preserveAspectRatio) {
             this.set_viewport(width, height, viewBox);
@@ -729,6 +739,8 @@ var Pathfit = (function () {
     }
     Scale.regex = /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/;
 
+    var scale = Scale;
+
     class Formatter {
         constructor(opt) {
             this.options = Object.assign({
@@ -809,18 +821,20 @@ var Pathfit = (function () {
     Formatter.pair_wsp = ' ';
     Formatter.arg_wsp = ' ';
 
+    var formatter = Formatter;
+
     class Pathfit {
         constructor(attr, path, pretransform, opt) {
             if (attr) this.set_viewbox(attr);
 
             if (path) this.set_path(path, pretransform);
 
-            this.formatter = new Formatter(Object.assign({ precision: 6 }, opt));
+            this.formatter = new formatter(Object.assign({ precision: 6 }, opt));
         }
 
         set_viewbox(attr) {
             const {width, height, viewBox, preserveAspectRatio} = attr;
-            this.scale = new Scale(width, height, viewBox, preserveAspectRatio);
+            this.scale = new scale(width, height, viewBox, preserveAspectRatio);
         }
 
         set_fit(preserveAspectRatio) {
@@ -832,10 +846,10 @@ var Pathfit = (function () {
         }
 
         set_path(path, pretransform) {
-            this._ast = new PathParser().parse(path);
+            this._ast = new pathParser().parse(path);
 
             if (pretransform) {
-                const trans = new TransformParser().parse(pretransform);
+                const trans = new transformParser().parse(pretransform);
 
                 this._ast = this._transform_ast(trans);
             }
@@ -848,13 +862,13 @@ var Pathfit = (function () {
                 throw new Error('no path is set');
             }
 
-            const transformer = new Transformer(trans);
+            const transformer$1 = new transformer(trans);
 
-            return transformer.transform(this._ast);
+            return transformer$1.transform(this._ast);
         }
 
         transform(str) {
-            const trans = new TransformParser().parse(str);
+            const trans = new transformParser().parse(str);
 
             const ast = this._transform_ast(trans);
 
@@ -874,6 +888,8 @@ var Pathfit = (function () {
         }
     }
 
-    return Pathfit;
+    var main = Pathfit;
+
+    return main;
 
 }());

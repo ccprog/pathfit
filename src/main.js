@@ -1,10 +1,10 @@
-import PathParser from './pathParser.js';
-import TransformParser from './transformParser.js';
-import Transformer from './transformer.js';
-import Scale from './scale.js';
-import Formatter from'./formatter.js';
+const PathParser = require('./pathParser.js');
+const TransformParser = require('./transformParser.js');
+const Transformer = require('./transformer.js');
+const Scale = require('./scale.js');
+const Formatter = require('./formatter.js');
 
-export default class Pathfit {
+class Pathfit {
     constructor(attr, path, pretransform, opt) {
         if (attr) this.set_viewbox(attr);
 
@@ -43,9 +43,9 @@ export default class Pathfit {
             throw new Error('no path is set');
         }
 
-        const transformer = new Transformer(trans);
+        const transformer$1 = new Transformer(trans);
 
-        return transformer.transform(this._ast);
+        return transformer$1.transform(this._ast);
     }
 
     transform(str) {
@@ -68,3 +68,5 @@ export default class Pathfit {
         return this.formatter.format(ast);
     }
 }
+
+module.exports = Pathfit;

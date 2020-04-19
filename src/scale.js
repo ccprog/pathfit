@@ -1,4 +1,4 @@
-export default class Scale {
+class Scale {
     constructor(width, height, viewBox, preserveAspectRatio) {
         this.set_viewport(width, height, viewBox);
         this.set_preserveAspectRatio(preserveAspectRatio);
@@ -91,3 +91,5 @@ export default class Scale {
     }
 }
 Scale.regex = /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/;
+
+module.exports = Scale;

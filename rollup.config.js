@@ -1,12 +1,9 @@
+import commonjs from '@rollup/plugin-commonjs';
 import {terser} from 'rollup-plugin-terser';
 
 export default {
   input: 'src/main.js',
   output: [
-    {
-      file: 'index.cjs.js',
-      format: 'cjs'
-    },
     {
       file: 'pathfit.js',
       format: 'iife',
@@ -18,5 +15,6 @@ export default {
       name: 'Pathfit',
       plugins: [terser()]
     }
-  ]
+  ],
+  plugins: [commonjs()]
 };

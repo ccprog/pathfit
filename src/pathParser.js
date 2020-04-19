@@ -1,9 +1,9 @@
-import Parser from './parser.js';
+const Parser = require('./parser.js');
 
 const path_commands = /([mzlhvcsqta])/i;
 const movoto_command = /m/i;
 
-export default class PathParser extends Parser {
+class PathParser extends Parser {
     get command_names() {
         return path_commands;
     }
@@ -87,3 +87,5 @@ export default class PathParser extends Parser {
         return this.group(str);
     }
 }
+
+module.exports = PathParser;

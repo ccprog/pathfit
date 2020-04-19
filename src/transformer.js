@@ -1,4 +1,4 @@
-export default class Transformer {
+class Transformer {
     constructor(trans) {
         this.normal_abs = [];
         this.normal_rel = [];
@@ -266,3 +266,5 @@ export default class Transformer {
         }, this);
     }
 }
+
+module.exports = Transformer;

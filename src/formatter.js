@@ -1,4 +1,4 @@
-export default class Formatter {
+class Formatter {
     constructor(opt) {
         this.options = Object.assign({
             precision: 6
@@ -77,3 +77,5 @@ export default class Formatter {
 Formatter.wsp = '';
 Formatter.pair_wsp = ' ';
 Formatter.arg_wsp = ' ';
+
+module.exports = Formatter;
