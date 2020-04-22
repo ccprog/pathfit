@@ -1,15 +1,5 @@
 const RawCommand = require('./rawCommand.js');
-
-class ParseError extends Error {
-    constructor(desc, string, position) {
-        super();
-
-        this.name = 'ParseError';
-        this.message = desc + '\n';
-        this.message += (string.string || string) + '\n';
-        this.message += Array(position).fill('_').join('') + '^';
-    }
-}
+const ParseError = require('./parseError.js');
 
 class Parser {
     constructor() {

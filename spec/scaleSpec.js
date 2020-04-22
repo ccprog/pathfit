@@ -1,90 +1,6 @@
 describe('Scale', function() {
     let Scale = require('../src/scale.js');
 
-    it('delegates setting size and fit to methods', function () {
-        spyOn(Scale.prototype, 'set_viewport');
-        spyOn(Scale.prototype, 'set_preserveAspectRatio');
-        const scale = new Scale('width', 'height', 'viewBox', 'preserveAspectRatio');
-        expect(scale.set_viewport).toHaveBeenCalledWith('width', 'height', 'viewBox');
-        expect(scale.set_preserveAspectRatio).toHaveBeenCalledWith('preserveAspectRatio');
-    });
-
-    const viewBox_data = [
-        {str: '0 0 30 50', props: {x: 0, y: 0, width: 30, height: 50}},
-        {str: '5 10 30 50', props: {x: 5, y: 10, width: 30, height: 50}},
-        {str: '-5 -10 30 50', props: {x: -5, y: -10, width: 30, height: 50}},
-        {str: '5,10,30,50', props: {x: 5, y: 10, width: 30, height: 50}},
-        {str: '5,10, 30, 50', props: {x: 5, y: 10, width: 30, height: 50}},
-        {str: '5 10 0 50', error: true},
-        {str: '5 10 30 -50', error: true},
-    ];
-
-    it('sets dimensions from viewBox', function() {
-        const scale = new Scale(1, 1);
-        for (let item of viewBox_data) {
-            const fn = () => scale.set_viewport(null, null, item.str);
-            if (item.error) {
-                expect(fn).toThrow();
-            } else {
-                expect(fn).not.toThrow();
-                for (let [key, value] of Object.entries(item.props)) {
-                    expect(scale[key]).toBe(value);
-                }
-            }
-        }
-    });
-
-    const size_data = [
-        {width: 30, height: 50, props: {x: 0, y: 0, width: 30, height: 50}},
-        {width: '30', height: '50', props: {x: 0, y: 0, width: 30, height: 50}},
-        {width: '30px', height: '50px', props: {x: 0, y: 0, width: 30, height: 50}},
-        {width: '30%', height: '50px', error: true},
-        {width: '30em', height: '50px', error: true},
-        {width: 0, height: 50, error: true},
-        {width: -30, height: 50, error: true},
-        {width: '30', height: '0', error: true},
-    ];
-
-    it('sets dimensions for width and height', function() {
-        const scale = new Scale(1, 1);
-        for (let item of size_data) {
-            const fn = () => scale.set_viewport(item.width, item.height);
-            if (item.error) {
-                expect(fn).toThrow();
-            } else {
-                expect(fn).not.toThrow();
-                for (let [key, value] of Object.entries(item.props)) {
-                    expect(scale[key]).toBe(value);
-                }
-            }
-        }
-    });
-
-    const missing_data = [
-        {},
-        {width: 30},
-        {height: 50}
-    ];
-
-    it('fails on incomple size data', function() {
-        const scale = new Scale(1, 1);
-        for (let item of missing_data) {
-            const fn = () => scale.set_viewport(item.width, item.height, item.viewPort);
-            expect(fn).toThrow();
-        }
-    });
-
-    it('sets fit from preserveAspectRatio', function() {
-        const scale = new Scale(1, 1);
-        expect(scale.align).toBe('xMidYMid');
-        expect(scale.meetOrSlice).toBe('meet');
-        scale.set_preserveAspectRatio('xMinYMin slice');
-        expect(scale.align).toBe('xMinYMin');
-        expect(scale.meetOrSlice).toBe('slice');
-        scale.set_preserveAspectRatio('none');
-        expect(scale.align).toBe('none');
-    });
-
     describe('returns correct transforms', function() {
         const size_data = {
             fit: [100, 100],
@@ -214,9 +130,9 @@ describe('Scale', function() {
 
         for (let [preserveAspectRatio, expectations] of Object.entries(aspect_data)) {
             it(`for "${preserveAspectRatio}"`, function() {
-                const scale = new Scale(100, 100, null, preserveAspectRatio);
+                const scale = new Scale(100, 100, null, { preserveAspectRatio });
                 for (let [size_key, size_values] of Object.entries(size_data)) {
-                    const result = scale.transform(...size_values);
+                    const result = scale.transform_from_aspect_ratio(...size_values);
                     expect(result).toEqual(expectations[size_key]);
                 }
             });

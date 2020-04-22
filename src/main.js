@@ -43,9 +43,9 @@ class Pathfit {
             throw new Error('no path is set');
         }
 
-        const transformer$1 = new Transformer(trans);
+        const transformer = new Transformer(trans);
 
-        return transformer$1.transform(this._ast);
+        return transformer.transform_from_aspect_ratio(this._ast);
     }
 
     transform(str) {
@@ -61,7 +61,7 @@ class Pathfit {
             throw new Error('no reference viewBox is set');
         }
 
-        const trans = this.scale.transform(width, height);
+        const trans = this.scale.transform_from_aspect_ratio(width, height);
 
         const ast = this._transform_ast(trans);
 
