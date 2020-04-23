@@ -1,3 +1,9 @@
+/*
+ * pathfit v0.0.1
+ * (c) 2020 Claus Colloseus <ccprog@gmx.de>
+ * MIT License
+ */
+
 var Pathfit = (function () {
     'use strict';
 

@@ -3,20 +3,34 @@
   "version": "0.0.1",
   "description": "Transform CSS path() values to responsively fit a container",
   "main": "src/main.js",
+  "browser": "pathfit.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccprog/pathfit.git"
+  },
   "keywords": [
     "path",
     "responsive",
-    "CSS"
+    "CSS",
+    "SVG",
+    "transform"
   ],
   "author": "Claus Colloseus <ccprog@gmx.de>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ccprog/pathfit/issues"
+  },
+  "homepage": "https://github.com/ccprog/pathfit#readme",
   "scripts": {
     "build": "rollup -c",
-    "test": "npx jasmine"
+    "test": "npx jasmine",
+    "preversion": "npm test",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.1.0",
-    "rollup-plugin-terser": "^5.3.0",
-    "jasmine": "^3.5.0"
+    "@rollup/plugin-commonjs": "^11.1",
+    "rollup-plugin-terser": "^5.3",
+    "jasmine": "^3.5"
   }
 }

@@ -5,10 +5,11 @@ the SVG path syntax. This makes it impossible to make it responsive with CSS alo
 script module helps by providing on-the-fly capabilities to re-compute the path data applying
 arbitrary SVG transformations.
 
-As an additional mechanism, the path data can be defined in relation to a view box. If a
-target size is provided, the transformed path data will fit into it the same way as if
-the path was part of an SVG with `viewBox` ans `preserveAspectRatio` attributes defined
-on its root element.
+The path data can be defined in relation to a view box. Then, if a target size is
+provided, the transformed path data will fit into that viewport the same way as if
+the path was part of an SVG with a `viewBox` defined on its root element. Either a SVG-style
+`preserveAspectRatio` attribute or CSS-style `object-fit` and `object-position` style
+properties can be used to position the view box in relation to the target viewport.
 
 ## Usage
 
@@ -22,7 +23,7 @@ Include the script:
 <script src="path/to/pathfit.min.js"></script>
 ```
 
-#### SVG style sizing
+#### SVG-style sizing
 
 Suppose your path source data are from a SVG, which either is a part of your DOM,
 or a standalone file. Read the path and size information you need:
@@ -45,7 +46,7 @@ for (let key of ['width', 'height', 'viewBox', 'preserveAspectRatio']) {
 }
 ```
 
-#### CSS style sizing
+#### CSS-style sizing
 
 Suppose you want to size your path data in relation to an `<img>` element. While you
 still need to give a base view box (i. e. at least `base.width` and `base.height`),
@@ -87,7 +88,7 @@ const style = {
 Scale the path to fit a container and then set the style property on the appropriate
 target element.
 
-#### SVG style sizing
+#### SVG-style sizing
 
 ```js
 const pathfitter = new Pathfit(base, undefined, path);
@@ -97,7 +98,7 @@ const scaled_path = pathfitter.scale_with_aspect_ratio(container.offsetWidth, co
 container.style.offsetPath = `path('${scaled_path}')`;
 ```
 
-#### CSS style sizing
+#### CSS-style sizing
 
 ```js
 const pathfitter = new Pathfit(base, style, path);
