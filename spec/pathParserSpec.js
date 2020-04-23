@@ -247,12 +247,14 @@ describe('PathParser', function() {
 
     for (let item of transform_data) {
         it('evaluates ' + item.str, function() {
-            const fn = () => parser.parse(item.str);
+            const fn = () => {
+                let result = parser.parse(item.str);
+                expect(result).toEqual(item.ast);
+            }
             if (item.error) {
                 expect(fn).toThrow();
             } else {
                 expect(fn).not.toThrow();
-                expect(parser.current).toEqual(item.ast);
             }
         })
     }

@@ -89,7 +89,7 @@ class TransformParser extends Parser {
             str = str.join(' ');
         }
 
-        super.parse(str);
+        return super.parse(str);
     }
 }
 

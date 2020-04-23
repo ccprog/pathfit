@@ -272,13 +272,6 @@ var Pathfit = (function () {
 
             return this.current;
         }
-
-        parse(str) {
-            this.current = [];
-            this.source = str;
-
-            return this.group(str);
-        }
     }
 
     var pathParser = PathParser;
@@ -372,7 +365,7 @@ var Pathfit = (function () {
                 str = str.join(' ');
             }
 
-            super.parse(str);
+            return super.parse(str);
         }
     }
 
@@ -1091,11 +1084,11 @@ var Pathfit = (function () {
         constructor(base, style, path, pretransform, opt) {
             if (base) this.set_viewbox(base);
 
-            if (style) this.set_object_style(base);
-
-            if (path) this.set_path(path, pretransform);
+            if (style) this.set_object_style(style);
 
             this.formatter = new formatter(Object.assign({ precision: 6 }, opt));
+
+            if (path) this.set_path(path, pretransform);
         }
 
         set_viewbox(base) {

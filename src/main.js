@@ -8,11 +8,11 @@ class Pathfit {
     constructor(base, style, path, pretransform, opt) {
         if (base) this.set_viewbox(base);
 
-        if (style) this.set_object_style(base);
-
-        if (path) this.set_path(path, pretransform);
+        if (style) this.set_object_style(style);
 
         this.formatter = new Formatter(Object.assign({ precision: 6 }, opt));
+
+        if (path) this.set_path(path, pretransform);
     }
 
     set_viewbox(base) {

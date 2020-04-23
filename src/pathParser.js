@@ -79,13 +79,6 @@ class PathParser extends Parser {
 
         return this.current;
     }
-
-    parse(str) {
-        this.current = [];
-        this.source = str;
-
-        return this.group(str);
-    }
 }
 
 module.exports = PathParser;
