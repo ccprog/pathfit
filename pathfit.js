@@ -1,5 +1,5 @@
 /*
- * pathfit v1.0.0
+ * pathfit v1.0.1
  * (c) 2020 Claus Colloseus <ccprog@gmx.de>
  * MIT License
  */
