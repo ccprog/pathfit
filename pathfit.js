@@ -45,10 +45,14 @@ var Pathfit = (function () {
 
             this.name = 'ParseError';
             this.message = desc + '\n';
-            this.message += (string.string || string) + '\n';
-            this.message += Array(position).fill('_').join('') + '^';
+            this.message += (string.string || string);
+            if (position) {
+                this.message += '\n' + Array(position).fill('_').join('') + '^';
+            }
         }
     }
+
+    var parseError = ParseError;
 
     class Parser {
         constructor() {
@@ -61,7 +65,7 @@ var Pathfit = (function () {
         }
 
         throw_parse_error(desc, string, position) {
-            throw new ParseError(desc, string, position);
+            throw new parseError(desc, string, position);
         }
 
         commands(str) {
@@ -656,81 +660,250 @@ var Pathfit = (function () {
 
     var transformer = Transformer;
 
+    const regex = {
+        number: /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/,
+        par: /^(?:(none)|x(Min|Mid|Max)Y(Min|Mid|Max)\s+(meet|slice))$/,
+        fit:  /^(fill|contain|cover|none|scale-down)$/,
+        position: /^(?:(left|center|right|top|bottom)|((?:[\+\-]?\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*)(px|%))$/
+    };
+
+    function position_keyword (key) {
+        const position = {
+            relative: true,
+            value: 0,
+            reverse: false
+        };
+        let type;
+
+        switch (key) {
+        case 'center':
+            type = 0b100000;
+            position.value = 50;
+            break;
+
+        case 'left':
+            type = 0b010000;
+            break;
+
+        case 'right':
+            type = 0b001000;
+            position.reverse = true;
+            break;
+
+        case 'top':
+            type = 0b000100;
+            break;
+
+        case 'bottom':
+            type = 0b000010;
+            position.reverse = true;
+            break;
+        }
+
+        return {type, position};
+    }
+
+    function length (len) {
+        const unit = typeof len === 'number' ? null : len.match(regex.number)[1];
+
+        const value = parseFloat(len);
+        if (value <= 0 || (unit && unit !== 'px')) {
+            throw new parseError('invalid or unusable length', len);
+        }
+
+        return value;
+    }
+
+    function viewport(width, height, viewBox) {
+        const port = {};
+
+        if (viewBox) {
+            [
+                port.x, 
+                port.y, 
+                port.width, 
+                port.height
+            ] = viewBox.split(/[,\s]+/).map(str => parseFloat(str));
+
+            if (port.width <= 0 || port.height <= 0) {
+                throw new parseError('invalid viewBox', viewBox);
+            }
+
+        } else if (width && height) {
+            port.x = 0;
+            port.y = 0;
+            port.width = length(width);
+            port.height = length(height);
+
+        } else {
+            throw new parseError('insufficiant data', null);
+        }
+
+        return port;
+    }
+
+    function aspect_ratio(preserveAspectRatio) {
+        const word = regex.par.exec(preserveAspectRatio);
+        if (!word) {
+            throw new parseError('invalid preserveAspectRatio', preserveAspectRatio);
+        }
+
+        par = { preserve: false };
+
+        if (word[1] !== 'none') {
+            par.preserve = true;
+            par.x = word[2];
+            par.y = word[3];
+            par.slice = word[4] === 'slice';
+        }
+
+        return par;
+    }
+
+    function object_fit(fit) {
+        const word = regex.fit.exec(fit);
+        if (!word) {
+            throw new parseError('invalid object-fit', fit);
+        }
+
+        return word[1];
+    }
+
+    function object_position(position) {
+        const p = position.split(/\s+/).map(size =>  {
+            const word = regex.position.exec(size);
+            if (!word) {
+                throw new parseError('invalid object-position', position);
+            }
+
+            if (word[1]) {
+                return position_keyword(word[1]);
+
+            } else {
+                return {
+                    type:0b000001, 
+                    position: {
+                        value: parseFloat(word[2]),
+                        relative: word[3] === '%',
+                        reverse: false
+                    }
+                };
+            }
+        });
+
+        if (!p.length || p.length > 4) {
+            throw new parseError('wrong number of object-position arguments', position);
+        }
+
+        const object = {
+            x: { value: 50, relative: true, reverse: false },
+            y: { value: 50, relative: true, reverse: false}
+        };
+
+        switch (p.length) {
+        case 1:
+            if (p[0].type & 0b000110) {
+                object.y = p[0].position;
+
+            } else {
+                object.x = p[0].position;
+            }
+            break;
+
+        case 2:
+            if (p[0].type & 0b111000 && p[1].type & 0b100111 ||
+                    (p[0].type & 0b000001 && p[1].type & 0b000001)) {
+                object.x = p[0].position;
+                object.y = p[1].position;
+
+            } else if (p[0].type & 0b100110 && p[1].type & 0b111001 &&
+                    ( p[0].type & 0b000110 || p[1].type & 0b011000)) {
+                object.x = p[1].position;
+                object.y = p[0].position;
+
+            } else {
+                throw new parseError('invalid object-position', position);
+            }
+            break;
+
+        case 3:
+            if (p[0].type & 0b011000 && p[1].type & 0b000001 && p[2].type & 0b100110) {
+                object.x = {...p[1].position, reverse: p[0].position.reverse};
+                object.y = p[2].position;
+
+            } else if (p[0].type & 0b111000 && p[1].type & 0b000110 && p[2].type & 0b000001) {
+                object.x = p[0].position;
+                object.y = {...p[2].position, reverse: p[1].position.reverse};
+
+            } else if (p[0].type & 0b100110 && p[1].type & 0b011000 && p[2].type & 0b000001) {
+                object.x = {...p[2].position, reverse: p[1].position.reverse};
+                object.y = p[0].position;
+
+            } else if (p[0].type & 0b000110 && p[1].type & 0b000001 && p[2].type & 0b111000) {
+                object.x = p[2].position;
+                object.y = {...p[1].position, reverse: p[0].position.reverse};
+
+            } else {
+                throw new parseError('invalid object-position', position);
+            }
+            break;
+
+            case 4:
+            if (p[0].type & 0b011000 && p[1].type & 0b000001 &&
+                    p[2].type & 0b000110 && p[3].type & 0b000001) {
+                object.x = {...p[1].position, reverse: p[0].position.reverse};
+                object.y = {...p[3].position, reverse: p[2].position.reverse};
+
+            } else if (p[0].type & 0b000110 && p[1].type & 0b000001 &&
+                    p[2].type & 0b011000 && p[3].type & 0b000001) {
+                object.x = {...p[3].position, reverse: p[2].position.reverse};
+                object.y = {...p[1].position, reverse: p[0].position.reverse};
+
+            } else {
+                throw new parseError('invalid object-position', position);
+            }
+            break;
+        }
+
+        return object;
+    }
+
+    var sizeParser = {
+        length,
+        viewport,
+        aspect_ratio,
+        object_fit,
+         object_position
+    };
+
     class Scale {
-        constructor(width, height, viewBox, preserveAspectRatio) {
+        constructor(width, height, viewBox, preserveAspectRatio, fit, position) {
+            this.fit = { par: {}, object: {} };
             this.set_viewport(width, height, viewBox);
-            this.set_preserveAspectRatio(preserveAspectRatio);
-        }
-
-        static get error () {
-            return new Error('Cannot determine the size of the drawing.');
-        }
-
-        static parse_length (len) {
-            const unit = typeof len === 'number' ? null : len.match(Scale.regex)[1];
-
-            const value = parseFloat(len);
-            if (value <= 0 || (unit && unit !== 'px')) throw Scale.error;
-
-            return value;
+            this.set_preserveAspectRatio(preserveAspectRatio || undefined);
+            this.set_object_fit(fit || undefined);
+            this.set_object_position(position || undefined);
         }
 
         set_viewport(width, height, viewBox) {
-            if (viewBox) {
-                [
-                    this.x, 
-                    this.y, 
-                    this.width, 
-                    this.height
-                ] = viewBox.split(/[,\s]+/).map(str => parseFloat(str));
-
-                if (this.width <= 0 || this.height <= 0) throw Scale.error;
-            } else if (width && height) {
-                this.x = 0;
-                this.y = 0;
-                this.width = Scale.parse_length(width);
-                this.height = Scale.parse_length(height);
-            } else {
-                throw Scale.error;
-            }
+            Object.assign(this, sizeParser.viewport(width, height, viewBox));
         }
 
         set_preserveAspectRatio(preserveAspectRatio = 'xMidYMid meet') {
-            [ this.align, this.meetOrSlice ] = preserveAspectRatio.split(/\s/);
+            this.fit.par = sizeParser.aspect_ratio(preserveAspectRatio);
         }
 
-        transform (w, h) {
-            const width = Scale.parse_length(w);
-            const height = Scale.parse_length(h);
+        set_object_fit(fit = 'fill') {
+            this.fit.object.fit = sizeParser.object_fit(fit);
+        }
 
-            let sx = width / this.width,
-                sy = height / this.height;
+        set_object_position(position = '50% 50%') {
+            Object.assign(this.fit.object, sizeParser.object_position(position));
+        }
 
-            if (this.align !== 'none') {
-                if (this.meetOrSlice === 'slice') {
-                    sx = sy = Math.max(sx, sy);
-                } else {
-                    sx = sy = Math.min(sx, sy);
-                }
-            }
-
-            let tx = -this.x * sx + 0,
-                ty = -this.y * sy + 0;
-
-            if (this.align.includes('xMid')) {
-                tx += (width - this.width * sx) / 2;
-            }
-            if (this.align.includes('xMax')) {
-                tx += (width - this.width * sx);
-            }
-            if (this.align.includes('YMid')) {
-                ty += (height - this.height * sy) / 2;
-            }
-            if (this.align.includes('YMax')) {
-                ty += (height - this.height * sy);
-            }
-
+        static optimize_transform (sx, sy, tx, ty) {
             const transform = [];
+
             if (tx !== 0 || ty !== 0) {
                 transform.push({
                     command: 'translate',
@@ -747,8 +920,88 @@ var Pathfit = (function () {
             }
             return transform;
         }
+
+        transform_from_aspect_ratio (w, h) {
+            const width = sizeParser.length(w);
+            const height = sizeParser.length(h);
+
+            let sx = width / this.width,
+                sy = height / this.height;
+
+            if (this.fit.par.preserve) {
+                if (this.fit.par.slice) {
+                    sx = sy = Math.max(sx, sy);
+                } else {
+                    sx = sy = Math.min(sx, sy);
+                }
+            }
+
+            let tx = -this.x * sx + 0,
+                ty = -this.y * sy + 0;
+
+            if (this.fit.par.x === 'Mid') {
+                tx += (width - this.width * sx) / 2;
+            }
+            if (this.fit.par.x === 'Max') {
+                tx += (width - this.width * sx);
+            }
+            if (this.fit.par.y === 'Mid') {
+                ty += (height - this.height * sy) / 2;
+            }
+            if (this.fit.par.y === 'Max') {
+                ty += (height - this.height * sy);
+            }
+
+            return Scale.optimize_transform (sx, sy, tx, ty);
+        }
+
+        static offset(position, scale, source, target) {
+            if (position.relative) {
+                if (position.reverse) {
+                    return (target - source * scale) * (100 - position.value) / 100;
+                } else {
+                    return (target - source * scale) * position.value / 100;
+                }
+            } else {
+                if (position.reverse) {
+                    return (target - source * scale) - position.value;
+                } else {
+                    return position.value;
+                }
+            }
+        }
+
+        transform_from_object_fit (w, h) {
+            const width = sizeParser.length(w);
+            const height = sizeParser.length(h);
+
+            let sx = width / this.width,
+                sy = height / this.height;
+
+            switch(this.fit.object.fit) {
+            case 'contain':
+                sx = sy = Math.min(sx, sy);
+                break;
+
+            case 'cover':
+                sx = sy = Math.max(sx, sy);
+                break;
+
+            case 'none':
+                sx = sy = 1;
+                break;
+
+            case 'scale-down':
+                sx = sy = Math.min(1, sx, sy);
+                break;
+            }
+
+            let tx = Scale.offset(this.fit.object.x, sx, this.width, width);
+            let ty = Scale.offset(this.fit.object.y, sy, this.height, height);
+
+            return Scale.optimize_transform (sx, sy, tx, ty);
+        }
     }
-    Scale.regex = /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/;
 
     var scale = Scale;
 
@@ -835,25 +1088,36 @@ var Pathfit = (function () {
     var formatter = Formatter;
 
     class Pathfit {
-        constructor(attr, path, pretransform, opt) {
-            if (attr) this.set_viewbox(attr);
+        constructor(base, style, path, pretransform, opt) {
+            if (base) this.set_viewbox(base);
+
+            if (style) this.set_object_style(base);
 
             if (path) this.set_path(path, pretransform);
 
             this.formatter = new formatter(Object.assign({ precision: 6 }, opt));
         }
 
-        set_viewbox(attr) {
-            const {width, height, viewBox, preserveAspectRatio} = attr;
+        set_viewbox(base) {
+            const {width, height, viewBox, preserveAspectRatio} = base;
             this.scale = new scale(width, height, viewBox, preserveAspectRatio);
         }
 
-        set_fit(preserveAspectRatio) {
+        set_aspect_ratio(preserveAspectRatio) {
             if (!this.scale) {
                 throw new Error('no reference viewBox is set');
             }
 
             this.scale.set_preserveAspectRatio(preserveAspectRatio);
+        }
+
+        set_object_style(style) {
+            if (!this.scale) {
+                throw new Error('no reference viewBox is set');
+            }
+
+            if (style.objectFit) this.scale.set_object_fit(style.objectFit);
+            if (style.objectPosition) this.scale.set_object_position(style.objectPosition);
         }
 
         set_path(path, pretransform) {
@@ -886,12 +1150,24 @@ var Pathfit = (function () {
             return this.formatter.format(ast);
         }
 
-        scale_to(width, height) {
+        scale_with_aspect_ratio(width, height) {
             if (!this.scale) {
                 throw new Error('no reference viewBox is set');
             }
 
-            const trans = this.scale.transform(width, height);
+            const trans = this.scale.transform_from_aspect_ratio(width, height);
+
+            const ast = this._transform_ast(trans);
+
+            return this.formatter.format(ast);
+        }
+
+        scale_with_object_fit(width, height) {
+            if (!this.scale) {
+                throw new Error('no reference viewBox is set');
+            }
+
+            const trans = this.scale.transform_from_object_fit(width, height);
 
             const ast = this._transform_ast(trans);
 
