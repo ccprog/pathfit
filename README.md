@@ -1,3 +1,5 @@
+![Jasmine test spec](https://github.com/ccprog/pathfit/workflows/Jasmine%20test%20spec/badge.svg)
+
 The CSS `path()` function does not accept units in its path string, because it is following
 the SVG path syntax. This makes it impossible to make it responsive with CSS alone. This
 script module helps by providing on-the-fly capabilities to re-compute the path data applying
