@@ -10,7 +10,7 @@ class Pathfit {
 
         if (style) this.set_object_style(style);
 
-        this.formatter = new Formatter(Object.assign({ precision: 6 }, opt));
+        this.formatter = new Formatter({ precision: 6, ...opt });
 
         if (path) this.set_path(path, pretransform);
     }

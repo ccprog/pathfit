@@ -3,28 +3,28 @@ const Parser = require('./parser.js');
 const transform_commands = /(matrix|translate|scale|rotate|skewX|skewY)/i;
 
 const group_structure = {
-    "matrix":{
-        args: ["a", "b", "c", "d", "e", "f"],
+    'matrix':{
+        args: ['a', 'b', 'c', 'd', 'e', 'f'],
         required: 6
     },
-    "translate": {
-        args: ["tx", "ty"],
+    'translate': {
+        args: ['tx', 'ty'],
         required: 1
     },
-    "scale": {
-        args: ["sx", "sy"],
+    'scale': {
+        args: ['sx', 'sy'],
         required: 1
     },
-    "rotate": {
-        args: ["angle", "cx", "cy"],
+    'rotate': {
+        args: ['angle', 'cx', 'cy'],
         required: 1
     },
-    "skewX": {
-        args: ["angle"],
+    'skewX': {
+        args: ['angle'],
         required: 1
     },
-    "skewY": {
-        args: ["angle"],
+    'skewY': {
+        args: ['angle'],
         required: 1
     }
 };
@@ -35,13 +35,13 @@ class TransformParser extends Parser {
     }
 
     collect_arguments(raw, args, required) {
-        raw.get_token("wsp");
+        raw.get_token('wsp');
 
-        if (!raw.get_token("brace_open", true)) {
-            this.throw_parse_error("expected opening brace", raw);
+        if (!raw.get_token('brace_open', true)) {
+            this.throw_parse_error('expected opening brace', raw);
         }
 
-        raw.get_token("wsp");
+        raw.get_token('wsp');
 
         const numbers = {};
 
@@ -49,16 +49,16 @@ class TransformParser extends Parser {
             numbers[id] = this.number(raw);
 
             const must_follow = this.comma_wsp(raw);
-            return raw.get_token("brace_close", true) && !must_follow;
+            return raw.get_token('brace_close', true) && !must_follow;
         });
 
         if (!test) {
-            this.throw_parse_error("expected closing brace", raw);
+            this.throw_parse_error('expected closing brace', raw);
         }
 
         const len = Object.keys(numbers).length;
         if (len !== required && len !== args.length) {
-            this.throw_parse_error("wrong number of arguments", raw);
+            this.throw_parse_error('wrong number of arguments', raw);
         }
 
         this.test_end(raw);

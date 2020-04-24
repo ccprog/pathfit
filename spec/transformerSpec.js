@@ -37,7 +37,7 @@ function equivArc(command) {
         },
   
         jasmineToString: function() {
-          return '<equivArc: ' + JSON.stringify(command) + '>';
+            return '<equivArc: ' + JSON.stringify(command) + '>';
         }
     };
 }
@@ -47,7 +47,7 @@ describe('PathParser', function() {
     const parser = new PathParser();
     const Transformer = require('../src/transformer.js');
 
-    transform_data = [
+    const transform_data = [
         {
             cmd: [{ command: 'translate', tx: 10, ty: -20 }],
             path: [
@@ -829,6 +829,6 @@ describe('PathParser', function() {
                     expect(transformer.transform(ast)).toEqual(path.ast);
                 });
             }
-        })
+        });
     }
 });

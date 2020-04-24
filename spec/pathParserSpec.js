@@ -6,7 +6,7 @@ describe('PathParser', function() {
         parser = new PathParser();
     });
 
-    transform_data = [        
+    const transform_data = [        
         {
             str: '',
             ast: []
@@ -250,12 +250,12 @@ describe('PathParser', function() {
             const fn = () => {
                 let result = parser.parse(item.str);
                 expect(result).toEqual(item.ast);
-            }
+            };
             if (item.error) {
                 expect(fn).toThrow();
             } else {
                 expect(fn).not.toThrow();
             }
-        })
+        });
     }
 });

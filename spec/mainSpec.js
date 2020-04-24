@@ -13,7 +13,7 @@ describe('Pathfit', function() {
                 preserve: true,
                 slice: true
             });
-        }
+        };
         expect(set_par).toThrow();
 
         const set_style = () => {
@@ -23,7 +23,7 @@ describe('Pathfit', function() {
                 x: {relative: true, value: 0, reverse: true},
                 y: {relative: true, value: 0, reverse: false}
             });
-        }
+        };
         expect(set_style).toThrow();
 
         pathfitter.set_viewbox({viewBox: '0 0 80 80'});
@@ -69,5 +69,5 @@ describe('Pathfit', function() {
 
         result = pathfitter.scale_with_object_fit(160, 160);
         expect(result).toBe('M170 0 10 160');
-    })
+    });
 });

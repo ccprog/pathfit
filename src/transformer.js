@@ -4,7 +4,7 @@ class Transformer {
         this.normal_rel = [];
 
         this.transformation = [{
-            command: "scale",
+            command: 'scale',
             sx: 1
         }];
 
@@ -21,20 +21,20 @@ class Transformer {
             const trans_rel = {...t};
 
             switch (t.command) {
-            case "matrix":
+            case 'matrix':
                 trans_rel.e = trans_rel.f = 0;
                 break;
 
-            case "translate":
+            case 'translate':
                 trans_rel.tx = trans_rel.ty = 0;
                 trans_abs.ty = t.ty || 0;
                 break;
 
-            case "scale":
+            case 'scale':
                 trans_abs.sy = trans_rel.sy = t.sy != null ? t.sy : t.sx;
                 break;
 
-            case "rotate":
+            case 'rotate':
                 trans_rel.cx = trans_rel.cy = 0;
                 trans_abs.cx = t.cx || 0;
                 trans_abs.cy = t.cy || 0;
@@ -51,32 +51,32 @@ class Transformer {
     }
 
     static coordinate_pair(group, pair) {
-        const c = Object.assign({x: 0, y: 0}, pair);
+        const c = {x: 0, y: 0, ...pair};
 
         group.concat([]).reverse().forEach(trans => {
             switch (trans.command) {
-            case "matrix":
-                const cx = c.x, cy = c.y;
+            case 'matrix':
+                var cx = c.x, cy = c.y;
                 c.x = trans.a * cx + trans.c * cy + trans.e;
                 c.y = trans.b * cx + trans.d * cy + trans.f;
                 break;
 
-            case "translate":
+            case 'translate':
                 c.x += trans.tx;
                 c.y += trans.ty;
                 break;
 
-            case "scale":
+            case 'scale':
                 c.x *= trans.sx;
                 c.y *= trans.sy;
                 break;
 
-            case "rotate":
+            case 'rotate':
                 c.x -= trans.cx;
                 c.y -= trans.cy;
 
-                const d = Math.sqrt(c.x*c.x + c.y*c.y);
-                const a = Math.atan2(c.y, c.x) * 180 / Math.PI + trans.angle;
+                var d = Math.sqrt(c.x*c.x + c.y*c.y);
+                var a = Math.atan2(c.y, c.x) * 180 / Math.PI + trans.angle;
 
                 c.x = d * Math.cos(a * Math.PI/180);
                 c.y = d * Math.sin(a * Math.PI/180);
@@ -85,11 +85,11 @@ class Transformer {
                 c.y += trans.cy;
                 break;
 
-            case "skewX":
+            case 'skewX':
                 c.x += Math.tan(trans.angle/180*Math.PI) * c.y;
                 break;
 
-            case "skewY":
+            case 'skewY':
                 c.y += Math.tan(trans.angle/180*Math.PI) * c.x;
                 break;
             }
@@ -128,19 +128,19 @@ class Transformer {
             let arc_trans;
 
             switch (transform.command) {
-            case "translate":
+            case 'translate':
                 arc_trans = [
                     {command: 'rotate', angle: args.rotation, cx: 0, cy: 0}
                 ];
                 break;
 
-            case "rotate":
+            case 'rotate':
                 arc_trans = [
                     {command: 'rotate', angle: transform.angle + args.rotation, cx: 0, cy: 0}
                 ];
                 break;
 
-            case "matrix":
+            case 'matrix':
                 arc_trans = [
                     {...transform, e: 0, f: 0},
                     {command: 'rotate', angle: args.rotation, cx: 0, cy: 0}
@@ -159,7 +159,7 @@ class Transformer {
             const t2 = Transformer.coordinate_pair(arc_trans, {x: 0, y: args.ry});
     
             const matrix = {
-                command: "matrix",
+                command: 'matrix',
                 a: t1.x / args.rx,
                 b: t1.y / args.rx,
                 c: t2.x / args.ry,
@@ -188,7 +188,7 @@ class Transformer {
     nest_transforms(struct, a, relative) {
         const args = {...a};
 
-        const func = struct === "arc" ? Transformer.elliptical_arc : Transformer.coordinate_pair;
+        const func = struct === 'arc' ? Transformer.elliptical_arc : Transformer.coordinate_pair;
         const transformation = relative ? this.normal_rel : this.normal_abs;
 
         return func(transformation, args);
@@ -198,19 +198,19 @@ class Transformer {
         let trans_args = {};
 
         switch (command) {
-        case "A":
-            trans_args = this.nest_transforms("arc", args, relative);
+        case 'A':
+            trans_args = this.nest_transforms('arc', args, relative);
             break;
 
-        case "C":
-            trans_args.control_2 = this.nest_transforms("pair", args.control_2, relative);
+        case 'C':
+            trans_args.control_2 = this.nest_transforms('pair', args.control_2, relative);
             /* falls through */
-        case "S":
-        case "Q":
-            trans_args.control_1 = this.nest_transforms("pair", args.control_1, relative);
+        case 'S':
+        case 'Q':
+            trans_args.control_1 = this.nest_transforms('pair', args.control_1, relative);
             /* falls through */
         default:
-            trans_args.coordinate_pair = this.nest_transforms("pair", args.coordinate_pair, relative);
+            trans_args.coordinate_pair = this.nest_transforms('pair', args.coordinate_pair, relative);
             break;
         }
 
@@ -223,7 +223,7 @@ class Transformer {
         return path.map((command, idx_c) => {
             let trans_command = command.command;
 
-            if (trans_command === "Z") {
+            if (trans_command === 'Z') {
                 return { command: trans_command };
             }
 
@@ -231,21 +231,21 @@ class Transformer {
                 let args_command = trans_command, relative = command.relative;
 
                 switch (trans_command) {
-                case "H":
+                case 'H':
                     args = {
                         coordinate_pair: { x: args.coordinate, y: relative ? 0 : last_y }
                     };
-                    args_command = "L";
+                    args_command = 'L';
                     break;
 
-                case "V":
+                case 'V':
                     args = {
                         coordinate_pair: { x: relative ? 0 : last_x, y: args.coordinate }
                     };
-                    args_command = "L";
+                    args_command = 'L';
                     break;
 
-                case "M":
+                case 'M':
                     if (idx_c === 0 && idx_s === 0) {
                         relative = false;
                     }

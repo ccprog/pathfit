@@ -1,10 +1,10 @@
 const ParseError = require('./parseError.js');
 
 const regex = {
-    number: /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/,
+    number: /^(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)*(.+)?/,
     par: /^(?:(none)|x(Min|Mid|Max)Y(Min|Mid|Max)\s+(meet|slice))$/,
     fit:  /^(fill|contain|cover|none|scale-down)$/,
-    position: /^(?:(left|center|right|top|bottom)|((?:[\+\-]?\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*)(px|%))$/
+    position: /^(?:(left|center|right|top|bottom)|((?:[+-]?\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)*)(px|%))$/
 };
 
 function position_keyword (key) {
@@ -88,7 +88,7 @@ function aspect_ratio(preserveAspectRatio) {
         throw new ParseError('invalid preserveAspectRatio', preserveAspectRatio);
     }
 
-    par = { preserve: false }
+    const par = { preserve: false };
 
     if (word[1] !== 'none') {
         par.preserve = true;
@@ -138,7 +138,7 @@ function object_position(position) {
     const object = {
         x: { value: 50, relative: true, reverse: false },
         y: { value: 50, relative: true, reverse: false}
-    }
+    };
 
     switch (p.length) {
     case 1:
@@ -188,7 +188,7 @@ function object_position(position) {
         }
         break;
 
-        case 4:
+    case 4:
         if (p[0].type & 0b011000 && p[1].type & 0b000001 &&
                 p[2].type & 0b000110 && p[3].type & 0b000001) {
             object.x = {...p[1].position, reverse: p[0].position.reverse};
@@ -213,5 +213,5 @@ module.exports = {
     viewport,
     aspect_ratio,
     object_fit,
-     object_position
-}
+    object_position
+};

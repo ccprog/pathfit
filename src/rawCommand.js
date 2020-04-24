@@ -17,7 +17,7 @@ class RawCommand {
 
     get_token(token, assert) {
         const result = this._str.substr(this._pos).match(RawCommand.regex[token]);
-        const sequence = (result || [""])[0];
+        const sequence = (result || [''])[0];
 
         this._pos += sequence.length;
 
@@ -26,12 +26,12 @@ class RawCommand {
 }
 RawCommand.regex = {
     wsp: /^[\x09\x20\x0D\x0A]*/,
-    comma: /^\,/,
+    comma: /^,/,
     brace_open: /^\(/,
     brace_close: /^\)/,
     flag: /^[01]/,
-    number: /^[\+\-]?(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/,
-    nonnegative: /^(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/
+    number: /^[+-]?(\d*\.\d+|\d+\.?)([eE][+-]?\d+)*/,
+    nonnegative: /^(\d*\.\d+|\d+\.?)([eE][+-]?\d+)*/
 };
 
 module.exports = RawCommand;

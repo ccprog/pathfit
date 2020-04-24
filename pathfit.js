@@ -26,7 +26,7 @@ var Pathfit = (function () {
 
         get_token(token, assert) {
             const result = this._str.substr(this._pos).match(RawCommand.regex[token]);
-            const sequence = (result || [""])[0];
+            const sequence = (result || [''])[0];
 
             this._pos += sequence.length;
 
@@ -35,12 +35,12 @@ var Pathfit = (function () {
     }
     RawCommand.regex = {
         wsp: /^[\x09\x20\x0D\x0A]*/,
-        comma: /^\,/,
+        comma: /^,/,
         brace_open: /^\(/,
         brace_close: /^\)/,
         flag: /^[01]/,
-        number: /^[\+\-]?(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/,
-        nonnegative: /^(\d*\.\d+|\d+\.?)([eE][\+\-]?\d+)*/
+        number: /^[+-]?(\d*\.\d+|\d+\.?)([eE][+-]?\d+)*/,
+        nonnegative: /^(\d*\.\d+|\d+\.?)([eE][+-]?\d+)*/
     };
 
     var rawCommand = RawCommand;
@@ -285,28 +285,28 @@ var Pathfit = (function () {
     const transform_commands = /(matrix|translate|scale|rotate|skewX|skewY)/i;
 
     const group_structure = {
-        "matrix":{
-            args: ["a", "b", "c", "d", "e", "f"],
+        'matrix':{
+            args: ['a', 'b', 'c', 'd', 'e', 'f'],
             required: 6
         },
-        "translate": {
-            args: ["tx", "ty"],
+        'translate': {
+            args: ['tx', 'ty'],
             required: 1
         },
-        "scale": {
-            args: ["sx", "sy"],
+        'scale': {
+            args: ['sx', 'sy'],
             required: 1
         },
-        "rotate": {
-            args: ["angle", "cx", "cy"],
+        'rotate': {
+            args: ['angle', 'cx', 'cy'],
             required: 1
         },
-        "skewX": {
-            args: ["angle"],
+        'skewX': {
+            args: ['angle'],
             required: 1
         },
-        "skewY": {
-            args: ["angle"],
+        'skewY': {
+            args: ['angle'],
             required: 1
         }
     };
@@ -317,13 +317,13 @@ var Pathfit = (function () {
         }
 
         collect_arguments(raw, args, required) {
-            raw.get_token("wsp");
+            raw.get_token('wsp');
 
-            if (!raw.get_token("brace_open", true)) {
-                this.throw_parse_error("expected opening brace", raw);
+            if (!raw.get_token('brace_open', true)) {
+                this.throw_parse_error('expected opening brace', raw);
             }
 
-            raw.get_token("wsp");
+            raw.get_token('wsp');
 
             const numbers = {};
 
@@ -331,16 +331,16 @@ var Pathfit = (function () {
                 numbers[id] = this.number(raw);
 
                 const must_follow = this.comma_wsp(raw);
-                return raw.get_token("brace_close", true) && !must_follow;
+                return raw.get_token('brace_close', true) && !must_follow;
             });
 
             if (!test) {
-                this.throw_parse_error("expected closing brace", raw);
+                this.throw_parse_error('expected closing brace', raw);
             }
 
             const len = Object.keys(numbers).length;
             if (len !== required && len !== args.length) {
-                this.throw_parse_error("wrong number of arguments", raw);
+                this.throw_parse_error('wrong number of arguments', raw);
             }
 
             this.test_end(raw);
@@ -383,7 +383,7 @@ var Pathfit = (function () {
             this.normal_rel = [];
 
             this.transformation = [{
-                command: "scale",
+                command: 'scale',
                 sx: 1
             }];
 
@@ -400,20 +400,20 @@ var Pathfit = (function () {
                 const trans_rel = {...t};
 
                 switch (t.command) {
-                case "matrix":
+                case 'matrix':
                     trans_rel.e = trans_rel.f = 0;
                     break;
 
-                case "translate":
+                case 'translate':
                     trans_rel.tx = trans_rel.ty = 0;
                     trans_abs.ty = t.ty || 0;
                     break;
 
-                case "scale":
+                case 'scale':
                     trans_abs.sy = trans_rel.sy = t.sy != null ? t.sy : t.sx;
                     break;
 
-                case "rotate":
+                case 'rotate':
                     trans_rel.cx = trans_rel.cy = 0;
                     trans_abs.cx = t.cx || 0;
                     trans_abs.cy = t.cy || 0;
@@ -430,32 +430,32 @@ var Pathfit = (function () {
         }
 
         static coordinate_pair(group, pair) {
-            const c = Object.assign({x: 0, y: 0}, pair);
+            const c = {x: 0, y: 0, ...pair};
 
             group.concat([]).reverse().forEach(trans => {
                 switch (trans.command) {
-                case "matrix":
-                    const cx = c.x, cy = c.y;
+                case 'matrix':
+                    var cx = c.x, cy = c.y;
                     c.x = trans.a * cx + trans.c * cy + trans.e;
                     c.y = trans.b * cx + trans.d * cy + trans.f;
                     break;
 
-                case "translate":
+                case 'translate':
                     c.x += trans.tx;
                     c.y += trans.ty;
                     break;
 
-                case "scale":
+                case 'scale':
                     c.x *= trans.sx;
                     c.y *= trans.sy;
                     break;
 
-                case "rotate":
+                case 'rotate':
                     c.x -= trans.cx;
                     c.y -= trans.cy;
 
-                    const d = Math.sqrt(c.x*c.x + c.y*c.y);
-                    const a = Math.atan2(c.y, c.x) * 180 / Math.PI + trans.angle;
+                    var d = Math.sqrt(c.x*c.x + c.y*c.y);
+                    var a = Math.atan2(c.y, c.x) * 180 / Math.PI + trans.angle;
 
                     c.x = d * Math.cos(a * Math.PI/180);
                     c.y = d * Math.sin(a * Math.PI/180);
@@ -464,11 +464,11 @@ var Pathfit = (function () {
                     c.y += trans.cy;
                     break;
 
-                case "skewX":
+                case 'skewX':
                     c.x += Math.tan(trans.angle/180*Math.PI) * c.y;
                     break;
 
-                case "skewY":
+                case 'skewY':
                     c.y += Math.tan(trans.angle/180*Math.PI) * c.x;
                     break;
                 }
@@ -507,19 +507,19 @@ var Pathfit = (function () {
                 let arc_trans;
 
                 switch (transform.command) {
-                case "translate":
+                case 'translate':
                     arc_trans = [
                         {command: 'rotate', angle: args.rotation, cx: 0, cy: 0}
                     ];
                     break;
 
-                case "rotate":
+                case 'rotate':
                     arc_trans = [
                         {command: 'rotate', angle: transform.angle + args.rotation, cx: 0, cy: 0}
                     ];
                     break;
 
-                case "matrix":
+                case 'matrix':
                     arc_trans = [
                         {...transform, e: 0, f: 0},
                         {command: 'rotate', angle: args.rotation, cx: 0, cy: 0}
@@ -538,7 +538,7 @@ var Pathfit = (function () {
                 const t2 = Transformer.coordinate_pair(arc_trans, {x: 0, y: args.ry});
         
                 const matrix = {
-                    command: "matrix",
+                    command: 'matrix',
                     a: t1.x / args.rx,
                     b: t1.y / args.rx,
                     c: t2.x / args.ry,
@@ -567,7 +567,7 @@ var Pathfit = (function () {
         nest_transforms(struct, a, relative) {
             const args = {...a};
 
-            const func = struct === "arc" ? Transformer.elliptical_arc : Transformer.coordinate_pair;
+            const func = struct === 'arc' ? Transformer.elliptical_arc : Transformer.coordinate_pair;
             const transformation = relative ? this.normal_rel : this.normal_abs;
 
             return func(transformation, args);
@@ -577,19 +577,19 @@ var Pathfit = (function () {
             let trans_args = {};
 
             switch (command) {
-            case "A":
-                trans_args = this.nest_transforms("arc", args, relative);
+            case 'A':
+                trans_args = this.nest_transforms('arc', args, relative);
                 break;
 
-            case "C":
-                trans_args.control_2 = this.nest_transforms("pair", args.control_2, relative);
+            case 'C':
+                trans_args.control_2 = this.nest_transforms('pair', args.control_2, relative);
                 /* falls through */
-            case "S":
-            case "Q":
-                trans_args.control_1 = this.nest_transforms("pair", args.control_1, relative);
+            case 'S':
+            case 'Q':
+                trans_args.control_1 = this.nest_transforms('pair', args.control_1, relative);
                 /* falls through */
             default:
-                trans_args.coordinate_pair = this.nest_transforms("pair", args.coordinate_pair, relative);
+                trans_args.coordinate_pair = this.nest_transforms('pair', args.coordinate_pair, relative);
                 break;
             }
 
@@ -602,7 +602,7 @@ var Pathfit = (function () {
             return path.map((command, idx_c) => {
                 let trans_command = command.command;
 
-                if (trans_command === "Z") {
+                if (trans_command === 'Z') {
                     return { command: trans_command };
                 }
 
@@ -610,21 +610,21 @@ var Pathfit = (function () {
                     let args_command = trans_command, relative = command.relative;
 
                     switch (trans_command) {
-                    case "H":
+                    case 'H':
                         args = {
                             coordinate_pair: { x: args.coordinate, y: relative ? 0 : last_y }
                         };
-                        args_command = "L";
+                        args_command = 'L';
                         break;
 
-                    case "V":
+                    case 'V':
                         args = {
                             coordinate_pair: { x: relative ? 0 : last_x, y: args.coordinate }
                         };
-                        args_command = "L";
+                        args_command = 'L';
                         break;
 
-                    case "M":
+                    case 'M':
                         if (idx_c === 0 && idx_s === 0) {
                             relative = false;
                         }
@@ -660,10 +660,10 @@ var Pathfit = (function () {
     var transformer = Transformer;
 
     const regex = {
-        number: /^(?:\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*(.+)?/,
+        number: /^(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)*(.+)?/,
         par: /^(?:(none)|x(Min|Mid|Max)Y(Min|Mid|Max)\s+(meet|slice))$/,
         fit:  /^(fill|contain|cover|none|scale-down)$/,
-        position: /^(?:(left|center|right|top|bottom)|((?:[\+\-]?\d*\.\d+|\d+\.?)(?:[eE][\+\-]?\d+)*)(px|%))$/
+        position: /^(?:(left|center|right|top|bottom)|((?:[+-]?\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)*)(px|%))$/
     };
 
     function position_keyword (key) {
@@ -747,7 +747,7 @@ var Pathfit = (function () {
             throw new parseError('invalid preserveAspectRatio', preserveAspectRatio);
         }
 
-        par = { preserve: false };
+        const par = { preserve: false };
 
         if (word[1] !== 'none') {
             par.preserve = true;
@@ -847,7 +847,7 @@ var Pathfit = (function () {
             }
             break;
 
-            case 4:
+        case 4:
             if (p[0].type & 0b011000 && p[1].type & 0b000001 &&
                     p[2].type & 0b000110 && p[3].type & 0b000001) {
                 object.x = {...p[1].position, reverse: p[0].position.reverse};
@@ -872,7 +872,7 @@ var Pathfit = (function () {
         viewport,
         aspect_ratio,
         object_fit,
-         object_position
+        object_position
     };
 
     class Scale {
@@ -1006,9 +1006,7 @@ var Pathfit = (function () {
 
     class Formatter {
         constructor(opt) {
-            this.options = Object.assign({
-                precision: 6
-            }, opt);
+            this.options = { precision: 6, ...opt };
         }
 
         flag(f) {
@@ -1092,7 +1090,7 @@ var Pathfit = (function () {
 
             if (style) this.set_object_style(style);
 
-            this.formatter = new formatter(Object.assign({ precision: 6 }, opt));
+            this.formatter = new formatter({ precision: 6, ...opt });
 
             if (path) this.set_path(path, pretransform);
         }

@@ -126,7 +126,7 @@ describe('Scale', function() {
                 wide:  [{command: 'translate', tx: 0, ty: -200}, {command: 'scale', sx: 3, sy: 3}],
                 high: [{command: 'translate', tx: -300, ty: 0}, {command: 'scale', sx: 4, sy: 4}]
             },
-        }
+        };
 
         for (let [preserveAspectRatio, expectations] of Object.entries(aspect_data)) {
             it(`for "${preserveAspectRatio}"`, function() {
@@ -316,7 +316,7 @@ describe('Scale', function() {
             },
         ];
 
-        for (let {fit, position, desc, expectations} of aspect_data) {
+        for (let {fit, position, expectations} of aspect_data) {
             it(`-fit "${fit}" and -position "${position}"`, function() {
                 const scale = new Scale(100, 100, null, null, fit, position );
                 for (let [size_key, size_values] of Object.entries(size_data)) {

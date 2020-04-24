@@ -41,7 +41,7 @@ describe('sizeParser', function() {
     for (let item of size_data) {
         it(`sets dimensions from width "${item.width}" and height "${item.height}"`, function() {
             const fn = () => {
-                const port = sizeParser.viewport(item.width, item.height)
+                const port = sizeParser.viewport(item.width, item.height);
                 for (let [key, value] of Object.entries(item.props)) {
                     expect(port[key]).toBe(value);
                 }

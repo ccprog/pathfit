@@ -1,8 +1,6 @@
 class Formatter {
     constructor(opt) {
-        this.options = Object.assign({
-            precision: 6
-        }, opt);
+        this.options = { precision: 6, ...opt };
     }
 
     flag(f) {
