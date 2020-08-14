@@ -52,6 +52,23 @@ describe('PathParser', function() {
             ast: [{ command: 'M', relative: true, sequence: [ { coordinate_pair: { x: 0, y: 0 } } ] } ]
         },
         {
+            str: 'M+0-1',
+            ast: [{ command: 'M', relative: false, sequence: [ { coordinate_pair: { x: 0, y: -1 } } ] } ]
+        },
+        {
+            str: 'M 0.1.2',
+            ast: [{ command: 'M', relative: false, sequence: [ { coordinate_pair: { x: 0.1, y: 0.2 } } ] } ]
+        },
+        {
+            str: 'M 0-1+.2.3',
+            ast: [
+                { command: 'M', relative: false, sequence: [ 
+                    { coordinate_pair: { x: 0, y: -1 } }, 
+                    { coordinate_pair: { x: 0.2, y: 0.3 } } 
+                ] }
+            ]
+        },
+        {
             str: 'M 0 0 1 1 L 2 2',
             ast: [
                 { command: 'M', relative: false, sequence: [ 
@@ -221,6 +238,17 @@ describe('PathParser', function() {
             ]
         },
         {
+            str: 'M 0 0 A 10 15 20 012-3',
+            ast: [
+                { command: 'M', relative: false, sequence: [ 
+                    { coordinate_pair: { x: 0, y: 0 } } 
+                ] },
+                { command: 'A', relative: false, sequence: [
+                    { rx: 10, ry: 15, rotation: 20, large_arc: false, sweep: true, coordinate_pair: { x: 2, y: -3 } }
+                ] }
+            ]
+        },
+        {
             str: 'M 0 0 a 10 15 20 1 0 2 3 5 10 45 1 0 4 5',
             ast: [
                 { command: 'M', relative: false, sequence: [ 
@@ -242,7 +270,8 @@ describe('PathParser', function() {
         { str: 'M0', error: true },
         { str: 'M0,0,', error: true },
         { str: 'M0 .e3', error: true },
-        { str: 'M0 0a2 2 2 2 2 2 2', error: true }
+        { str: 'M0 0a2 2 2 2 2 2 2', error: true },
+        { str: 'M0 0 A-10 15 20 0 1 2 3', error: true }
     ];
 
     for (let item of transform_data) {

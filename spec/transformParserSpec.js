@@ -6,7 +6,7 @@ describe('TransformParser', function() {
         parser = new TransformParser();
     });
 
-    transform_data = [
+    const transform_data = [
         {
             str: 'matrix(1, 2, 3, 4.5, 5, 6)',
             ast: [{command: 'matrix', a: 1, b: 2, c: 3, d: 4.5, e: 5, f: 6}]
