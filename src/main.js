@@ -90,6 +90,10 @@ class Pathfit {
 
         return this.formatter.format(ast);
     }
+
+    toString() {
+        return this.formatter.format(this._ast || []);
+    }
 }
 
 module.exports = Pathfit;
