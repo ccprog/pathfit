@@ -1,6 +1,6 @@
 {
   "name": "pathfit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Transform CSS path() values to responsively fit a container",
   "main": "src/main.js",
   "type": "commonjs",
