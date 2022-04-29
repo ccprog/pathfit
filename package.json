@@ -3,6 +3,7 @@
   "version": "1.0.3",
   "description": "Transform CSS path() values to responsively fit a container",
   "main": "src/main.js",
+  "type": "commonjs",
   "browser": "pathfit.js",
   "repository": {
     "type": "git",
