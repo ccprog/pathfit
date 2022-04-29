@@ -1,6 +1,6 @@
 /*
  * pathfit v1.0.3
- * (c) 2020 Claus Colloseus <ccprog@gmx.de>
+ * (c) 2022 Claus Colloseus <ccprog@gmx.de>
  * MIT License
  */
 
@@ -1170,10 +1170,14 @@ var Pathfit = (function () {
 
             return this.formatter.format(ast);
         }
+
+        toString() {
+            return this.formatter.format(this._ast || []);
+        }
     }
 
     var main = Pathfit;
 
     return main;
 
-}());
+})();
